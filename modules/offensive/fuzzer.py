@@ -16,7 +16,7 @@ class AdvancedOffensiveScanner(BaseScanner):
         return finding_hash
 
 class FFufScanner(AdvancedOffensiveScanner):
-    async def __init__(self, target, scan_job_id):
+    def __init__(self, target, scan_job_id):
         super().__init__(target, scan_job_id, "ffuf")
     
     async def run(self):
