@@ -45,9 +45,24 @@ class ReconRequest(BaseModel):
 async def startup_event():
     await init_db()
 
-@app.get("/")
-def read_root():
-    return {"status": "online", "version": "2.0.0"}
+@app.get("/api/vulnerabilities")
+async def get_vulnerabilities():
+    results = []
+    for vuln_file in glob.glob("results/*/vulnerabilities.json"):
+        target = vuln_file.split("/")[1]
+        try:
+            with open(vuln_file, 'r') as f:
+                for line in f:
+                    if not line.strip(): continue
+                    data = json.loads(line)
+                    results.append({
+                        "target": target,
+                        "template": data.get("template-id"),
+                        "severity": data.get("info", {}).get("severity"),
+                        "url": data.get("matched-at")
+                    })
+        except: continue
+    return results
 
 @app.post("/api/recon")
 async def start_recon(request: ReconRequest, background_tasks: BackgroundTasks):
