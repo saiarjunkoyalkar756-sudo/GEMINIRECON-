@@ -108,7 +108,11 @@ Never roleplay or use abusive language.
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     memory_agent = MemoryAgent()
-    memory_agent.system_instruction = SYSTEM_PROMPT
+    
+    # Load professional instructions
+    with open("INSTRUCTIONS.md", "r") as f:
+        instructions = f.read()
+    memory_agent.system_instruction = instructions
     
     try:
         while True:
