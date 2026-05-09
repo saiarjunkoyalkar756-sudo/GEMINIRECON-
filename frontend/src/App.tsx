@@ -175,7 +175,8 @@ const App = () => {
     setLogs([{ time: new Date().toLocaleTimeString(), message: `Initializing recon workflow for ${targetToUse}...` }]);
     setStats({ assets: 0, risks: 0, services: 0, insights: 0 });
     
-    setChatMessages(prev => [...prev, { role: 'user', content: `Start recon for ${targetToUse}` }]);
+    // Clear the chat and start a fresh session
+    setChatMessages([{ role: 'assistant', content: `Starting reconnaissance for ${targetToUse}. I am analyzing the target and will update you with findings.` }]);
     
     try {
       await fetch('/api/recon', {
