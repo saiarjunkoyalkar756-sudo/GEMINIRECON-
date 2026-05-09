@@ -1,35 +1,32 @@
 from agents.base_agent import BaseAgent
 from tools.runner import ToolRunner
+import asyncio
+import os
 
 class SubdomainAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(system_instruction="You are a subdomain enumeration expert.")
-        
     async def run(self, target):
-        # Execute tool via runner
-        result = await ToolRunner.run("subfinder", f"-d {target}")
-        return {"agent": "SubdomainAgent", "data": result}
+        # Recursive enumeration using subfinder + assetfinder
+        await ToolRunner.run("subfinder", target, args=f"-d {target} -o results/{target}/subdomains.txt")
+        return {"agent": "SubdomainAgent", "status": "done"}
 
-class PortScanAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(system_instruction="You are a port scanning expert.")
-        
+class ScreenshotAgent(BaseAgent):
     async def run(self, target):
-        result = await ToolRunner.run("naabu", f"-host {target}")
-        return {"agent": "PortScanAgent", "data": result}
+        # Ensure we have live hosts for gowitness
+        await ToolRunner.run("httpx", target, args=f"-l results/{target}/subdomains.txt -o results/{target}/alive.txt")
+        # Screenshotting alive hosts
+        result = await ToolRunner.run("gowitness", target, args=f"file -f results/{target}/alive.txt --destination results/{target}/screenshots/")
+        return {"agent": "ScreenshotAgent", "status": "done"}
 
 class VulnerabilityAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(system_instruction="You are a vulnerability scanning expert.")
-        
     async def run(self, target):
-        result = await ToolRunner.run("nuclei", f"-target {target}")
-        return {"agent": "VulnerabilityAgent", "data": result}
+        # 1. Directory Fuzzing
+        await ToolRunner.run("ffuf", target, args=f"-w /usr/share/wordlists/dirb/common.txt -u http://FUZZ.{target} -o results/{target}/fuzz.json")
+        # 2. Nuclei Scan
+        result = await ToolRunner.run("nuclei", target, args=f"-l results/{target}/alive.txt -o results/{target}/vulnerabilities.json")
+        return {"agent": "VulnerabilityAgent", "status": "done"}
 
-class ReportAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(system_instruction="You are a security report generation expert.")
-        
-    async def generate(self, target, data):
-        # Logic to compile final markdown report
-        return f"Report generated for {target}"
+class ExploitAgent(BaseAgent):
+    async def run_sqli(self, url):
+        # Active exploitation only if requested
+        result = await ToolRunner.run("sqlmap", url, args=f"-u {url} --batch --crawl=2")
+        return {"agent": "ExploitAgent", "type": "SQLi", "data": result}

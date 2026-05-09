@@ -1,25 +1,24 @@
 import asyncio
-from agents.recon_agents import SubdomainAgent, PortScanAgent, VulnerabilityAgent, ReportAgent
+from agents.recon_agents import SubdomainAgent, ScreenshotAgent, VulnerabilityAgent
 
-async def run_pipeline(target):
-    print(f"[*] Starting Pipeline for {target}")
+async def run_pro_pipeline(target):
+    print(f"[*] Starting PRO Pipeline for {target}")
     
-    # Initialize Agents
+    # 1. Subdomains
     sub_agent = SubdomainAgent()
-    port_agent = PortScanAgent()
+    await sub_agent.run(target)
+    
+    # 2. Screenshots (Visual Recon)
+    shot_agent = ScreenshotAgent()
+    await shot_agent.run(target)
+    
+    # 3. Vuln Scan & Fuzzing
     vuln_agent = VulnerabilityAgent()
-    rep_agent = ReportAgent()
+    await vuln_agent.run(target)
     
-    # Execute Pipeline
-    subs = await sub_agent.run(target)
-    ports = await port_agent.run(target)
-    vulns = await vuln_agent.run(target)
-    
-    # Final Report
-    report = await rep_agent.generate(target, [subs, ports, vulns])
-    print(f"[+] {report}")
+    print(f"[+] PRO Recon Complete. Results in results/{target}/")
 
 if __name__ == "__main__":
     import sys
-    target = sys.argv[1] if len(sys.argv) > 1 else "example.com"
-    asyncio.run(run_pipeline(target))
+    target = sys.argv[1] if len(sys.argv) > 1 else "example.in"
+    asyncio.run(run_pro_pipeline(target))
