@@ -195,16 +195,22 @@ const App = () => {
     
     const input = chatInput.trim();
     setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', content: input }]);
     
-    if (input.toLowerCase().startsWith('scan ') || input.toLowerCase().startsWith('recon ')) {
+    // Send command to backend via API for recon or via WS for chat
+    if (input.toLowerCase().startsWith('scan ')) {
       const newTarget = input.split(' ')[1];
       setTarget(newTarget);
       handleStartRecon(newTarget);
     } else {
-      setChatMessages(prev => [...prev, { role: 'user', content: input }]);
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: "I'm monitoring the reconnaissance stream. You can command me to 'scan [domain]' or ask about specific findings." }]);
-      }, 1000);
+      // Send as chat message to websocket if connected
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ type: 'chat', content: input }));
+      } else {
+        setTimeout(() => {
+          setChatMessages(prev => [...prev, { role: 'assistant', content: "Backend disconnected. Commands not relayed." }]);
+        }, 500);
+      }
     }
   };
 
