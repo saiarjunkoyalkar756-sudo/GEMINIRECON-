@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  geminirecon:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./storage:/app/storage
+      - ./reports:/app/reports
+    stdin_open: true
+    tty: true

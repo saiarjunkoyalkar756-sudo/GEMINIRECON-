@@ -1,0 +1,14 @@
+google-genai
+rich
+textual
+python-dotenv
+pyyaml
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+aiosqlite
+jinja2
+aiohttp
+beautifulsoup4
+markdown
