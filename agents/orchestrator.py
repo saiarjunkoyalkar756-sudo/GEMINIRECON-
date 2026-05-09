@@ -44,9 +44,14 @@ class ReconOrchestrator:
             risk_assessment = Normalizer.normalize(risk_resp.text)
 
             # 5. Generate Professional AI Report
-            if callback: await callback("Generating final AI report...")
-            report_context = f"Target: {user_input}\nAnalysis: {analysis_summary}\nRisks: {risk_assessment}"
-            report_resp = await self.report.chat_async(f"Generate a professional executive report for: {report_context}")
+            if callback: await callback("Generating comprehensive AI report...")
+            report_context = f"Target: {user_input}\nRaw Tool Data Summary: {recon_data}\nAnalysis: {analysis_summary}\nRisks: {risk_assessment}"
+            report_resp = await self.report.chat_async(
+                f"Generate a professional security report for: {report_context}. "
+                "CRITICAL: Base the report ONLY on real findings. Do NOT make assumptions. "
+                "Ensure the report is comprehensive. If many assets or vulnerabilities were found, list them all. "
+                "Aim for clarity and professional structure (Executive Summary, Technical Findings, Recommendations)."
+            )
             final_report_text = Normalizer.normalize(report_resp.text)
 
             # 6. Save as PDF
@@ -89,27 +94,49 @@ class ReconOrchestrator:
 
     def save_as_pdf(self, target, content):
         """
-        Saves the AI-generated report as a professional PDF.
+        Saves the AI-generated report as a professional multi-page PDF.
         """
         try:
-            pdf = FPDF()
+            class PDF(FPDF):
+                def footer(self):
+                    self.set_y(-15)
+                    self.set_font("Helvetica", "I", 8)
+                    self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
+
+            pdf = PDF()
+            pdf.alias_nb_pages()
             pdf.add_page()
+            pdf.set_margins(15, 20, 15)
+            pdf.set_auto_page_break(auto=True, margin=20)
             
-            # Title
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(0, 10, f"GEMINIRECON SECURITY REPORT: {target}", ln=True, align='C')
-            pdf.ln(5)
+            # Title Header
+            pdf.set_font("Helvetica", 'B', 16)
+            pdf.set_text_color(33, 37, 41)
+            pdf.cell(0, 15, f"GEMINIRECON SECURITY REPORT", ln=True, align='L')
+            
+            pdf.set_font("Helvetica", 'B', 12)
+            pdf.set_text_color(108, 117, 125)
+            pdf.cell(0, 10, f"Target: {target}", ln=True, align='L')
             
             # Metadata
-            pdf.set_font("Arial", 'I', 10)
-            pdf.cell(0, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align='R')
+            pdf.set_font("Helvetica", 'I', 9)
+            pdf.cell(0, 5, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align='L')
+            pdf.ln(10)
+            
+            # Divider line
+            pdf.set_draw_color(200, 200, 200)
+            pdf.line(15, pdf.get_y(), 195, pdf.get_y())
             pdf.ln(10)
             
             # Body Content
-            pdf.set_font("Arial", size=12)
-            # Replace characters that might cause encoding issues in basic FPDF
+            pdf.set_font("Helvetica", size=11)
+            pdf.set_text_color(0, 0, 0)
+            
+            # Clean content for Latin-1 compatibility
             clean_content = content.encode('latin-1', 'replace').decode('latin-1')
-            pdf.multi_cell(0, 10, clean_content)
+            
+            # Professional paragraph rendering
+            pdf.multi_cell(0, 7, clean_content)
             
             filename = f"{target}.pdf"
             filepath = os.path.join(REPORTS_DIR, filename)
