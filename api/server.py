@@ -96,12 +96,32 @@ async def run_orchestrator(target: str):
     finally:
         set_tool_callback(None)
 
+from agents.multi_agents import AnalysisAgent, RiskAgent, ReportAgent, MemoryAgent
+
+SYSTEM_PROMPT = """
+You are a professional cybersecurity assistant.
+Be concise, technical, and safe.
+Never roleplay or use abusive language.
+"""
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    memory_agent = MemoryAgent()
+    memory_agent.system_instruction = SYSTEM_PROMPT
+    
     try:
         while True:
-            await websocket.receive_text()
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            
+            if message.get("type") == "chat":
+                content = message.get("content")
+                response = await memory_agent.chat_async(content)
+                await websocket.send_text(json.dumps({
+                    "type": "chat", 
+                    "content": response.text if hasattr(response, 'text') else str(response)
+                }))
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
