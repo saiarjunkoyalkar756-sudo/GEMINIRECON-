@@ -1,3 +1,8 @@
+# Local database and reports
+storage/*.db
+reports/
+!reports/.gitkeep
+
 # OS / editor artifacts
 .DS_Store
 Thumbs.db

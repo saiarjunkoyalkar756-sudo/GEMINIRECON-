@@ -60,9 +60,37 @@ Launch the interactive TUI:
 python main.py
 ```
 
+### API Mode
+
+For headless operation or integration with the web frontend:
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+python api/server.py
+```
+The API will be available at `http://localhost:8000`.
+
+### Web Dashboard & G0DM0D3
+
+GEMINIRECON includes a Next.js-based web dashboard and the **G0DM0D3** liberated AI interface.
+
+To start G0DM0D3:
+```bash
+cd G0DM0D3
+npm install
+npm run dev
+```
+
 ## 🛠️ Supported Tools
 
 - `subfinder`, `amass`, `httpx`, `whois`, `dig`, `dnsx`, `naabu`, `nuclei`, `gowitness`, `katana`, `wafw00f`
+- *Note: These tools must be installed in your PATH.*
+
+## 🐳 Docker Deployment
+
+Run the entire stack with Docker:
+```bash
+docker-compose up --build
+```
 
 ## 🛡️ Safety & Ethics
 
