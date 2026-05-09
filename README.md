@@ -68,7 +68,7 @@ Run a quick recon or specific instruction directly from the terminal:
 python main.py --target "example.com"
 
 # Specific instruction
-python main.py --target "search for vulnerabilities on kitss.edu.in using passive tools"
+python main.py --target "search for vulnerabilities on example.in using passive tools"
 ```
 
 ### 🧠 Multi-Provider LLM Support
@@ -103,7 +103,7 @@ python main.py --target "find potential misconfigurations on target.com"
 
 ### 3. Institutional OSINT
 ```bash
-python main.py --target "kitss.edu.in"
+python main.py --target "example.in"
 ```
 *Extracts administrative contacts, mail server details, and identifies EOL software versions (like PHP 7.4).*
 
