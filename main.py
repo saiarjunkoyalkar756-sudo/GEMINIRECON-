@@ -1,52 +1,55 @@
-import sys
-import asyncio
 import argparse
-from dashboard.tui import ReconApp
-from core.storage.database import init_db
-from agents.orchestrator import ReconOrchestrator
-from core.utils.tool_executor import set_tool_callback
+import asyncio
+import httpx
+import json
+import sys
+from core.config import PROJECT_NAME, VERSION
 
-async def run_cli(target):
-    print(f"[*] Initializing GEMINIRECON CLI for target: {target}")
-    
-    async def callback(msg):
-        print(f"[-] {msg}")
+API_URL = "http://localhost:8000/scans/"
 
-    # Set tool execution callback to see real-time tool logs
-    set_tool_callback(callback)
+async def trigger_scan(target, options):
+    print(f"[*] Initializing GEMINIRECON {VERSION}")
+    print(f"[*] Target: {target}")
     
-    # Initialize database
-    await init_db()
+    payload = {
+        "target_url": target,
+        "options": options
+    }
     
-    orchestrator = ReconOrchestrator()
-    
-    try:
-        results = await orchestrator.run_recon_workflow(target, callback=callback)
-        print("\n" + "="*50)
-        print(f"RECON REPORT: {target}")
-        print("="*50)
-        print(f"\n[ANALYSIS]\n{results['analysis']}")
-        print(f"\n[RISK ASSESSMENT]\n{results['risk']}")
-        print(f"\n[ASSETS]")
-        for asset in results['assets']:
-            val = asset.get('value') or asset.get('domain')
-            print(f"- {val} ({asset.get('type', 'unknown')})")
-    except Exception as e:
-        print(f"[!] Error: {e}")
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.post(API_URL, json=payload)
+            if resp.status_code == 200:
+                data = resp.json()
+                print(f"[+] Scan successfully queued. ID: {data['scan_id']}")
+                return data['scan_id']
+            else:
+                print(f"[!] Error: {resp.text}")
+        except Exception as e:
+            print(f"[!] Connection failed: {e}")
+    return None
 
-async def run_tui():
-    await init_db()
-    app = ReconApp()
-    await app.run_async()
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="GEMINIRECON - AI-Powered Recon Framework")
-    parser.add_argument("--target", help="Target domain or instruction for recon")
-    parser.add_argument("--tui", action="store_true", help="Launch TUI (default)")
+def main():
+    parser = argparse.ArgumentParser(description=f"{PROJECT_NAME} - Enterprise AI Recon Platform")
+    parser.add_argument("--target", required=True, help="Target URL (e.g., https://example.com)")
+    parser.add_argument("--full-recon", action="store_true", help="Perform comprehensive reconnaissance")
+    parser.add_argument("--web-fetch", action="store_true", help="Fetch and analyze web intelligence")
+    parser.add_argument("--cve-scan", action="store_true", help="Correlate technologies with CVEs")
+    parser.add_argument("--js-analysis", action="store_true", help="Analyze JS files for secrets")
+    parser.add_argument("--tech-detect", action="store_true", help="Identify technology stack")
     
     args = parser.parse_args()
     
-    if args.target:
-        asyncio.run(run_cli(args.target))
-    else:
-        asyncio.run(run_tui())
+    options = {
+        "full_recon": args.full_recon,
+        "web_fetch": args.web_fetch,
+        "cve_scan": args.cve_scan,
+        "js_analysis": args.js_analysis,
+        "tech_detect": args.tech_detect
+    }
+    
+    # In a real scenario, we might want to watch the logs here
+    asyncio.run(trigger_scan(args.target, options))
+
+if __name__ == "__main__":
+    main()

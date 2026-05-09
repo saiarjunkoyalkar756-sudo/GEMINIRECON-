@@ -4,9 +4,9 @@ textual
 python-dotenv
 pyyaml
 fastapi
-uvicorn
-pydantic
-sqlalchemy
+uvicorn[standard]
+pydantic[email]
+sqlalchemy[asyncio]
 aiosqlite
 jinja2
 aiohttp
@@ -14,3 +14,9 @@ beautifulsoup4
 markdown
 openai
 fpdf2
+python-multipart
+python-jose
+websockets
+pytest
+pytest-asyncio
+httpx

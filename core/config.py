@@ -1,45 +1,40 @@
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Base Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-CORE_DIR = BASE_DIR / "core"
-AGENTS_DIR = BASE_DIR / "agents"
-PLUGINS_DIR = BASE_DIR / "plugins"
-STORAGE_DIR = BASE_DIR / "storage"
-REPORTS_DIR = BASE_DIR / "reports"
-PROMPTS_DIR = BASE_DIR / "prompts"
+# Project Info
+PROJECT_NAME = "GEMINIRECON"
+VERSION = "2.0.0"
+
+# Database
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./geminirecon.db")
+
+# Redis & Celery
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+
+# Security
+SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key-change-me")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week
+
+# AI Configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+AI_MODEL = os.getenv("AI_MODEL", "google/gemini-2.0-flash-001") # Default high-performance model
+
+# Scanning Constants
+MAX_PARALLEL_SCANS = 5
+SCAN_TIMEOUT = 3600 # 1 hour
+
+# File Paths
+RESULTS_DIR = os.path.join(os.getcwd(), "results")
+REPORTS_DIR = os.path.join(os.getcwd(), "reports")
 
 # Ensure directories exist
-for dist in [STORAGE_DIR, REPORTS_DIR, PLUGINS_DIR]:
-    dist.mkdir(exist_ok=True)
-
-# API Settings
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini") # 'gemini' or 'openrouter'
-
-# Tool Settings
-TOOL_TIMEOUT = int(os.getenv("TOOL_TIMEOUT", "300"))
-
-# Database Settings
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{STORAGE_DIR}/recon.db")
-
-# Command Whitelist
-ALLOWED_COMMANDS = [
-    "subfinder", "amass", "httpx", "whois", "dig", "nmap", 
-    "curl", "python3", "grep", "awk", "sed", "sort", 
-    "uniq", "cat", "head", "tail", "wc", "dnsx", "naabu",
-    "nuclei", "gowitness", "katana", "wafw00f"
-]
-
-# Safety Settings
-PASSIVE_MODE_DEFAULT = True
-REQUIRE_CONFIRMATION_FOR_ACTIVE = True
-MAX_RECURSION_DEPTH = 3
+os.makedirs(RESULTS_DIR, exist_ok=True)
+os.makedirs(REPORTS_DIR, exist_ok=True)

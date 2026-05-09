@@ -1,12 +1,49 @@
 version: '3.8'
 
 services:
-  geminirecon:
-    build: .
-    env_file:
-      - .env
+  db:
+    image: postgres:15-alpine
     volumes:
-      - ./storage:/app/storage
-      - ./reports:/app/reports
-    stdin_open: true
-    tty: true
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=geminirecon
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db/geminirecon
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: celery -A workers.tasks.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db/geminirecon
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:

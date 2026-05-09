@@ -10,12 +10,14 @@ from datetime import datetime
 
 class ReconOrchestrator:
     def __init__(self):
+        # All agents now respect the LLM_PROVIDER set in .env
         self.planner = PlannerAgent()
         self.recon = ReconAgent()
-        self.analysis = AnalysisAgent()
+        self.analysis = AnalysisAgent(use_ultraplinian=True)
         self.risk = RiskAgent()
         self.report = ReportAgent()
         self.memory = MemoryAgent()
+
 
     async def run_recon_workflow(self, user_input, callback=None):
         """
