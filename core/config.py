@@ -19,7 +19,11 @@ for dist in [STORAGE_DIR, REPORTS_DIR, PLUGINS_DIR]:
 
 # API Settings
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash") # Defaulting to 2.0-flash as per update.txt
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini") # 'gemini' or 'openrouter'
 
 # Tool Settings
 TOOL_TIMEOUT = int(os.getenv("TOOL_TIMEOUT", "300"))
