@@ -37,10 +37,10 @@ class BaseAgent:
                 self.history.append({"role": "system", "content": self.system_instruction})
 
     async def chat_async(self, message):
-        if self.provider == "gemini":
-            return await self._chat_gemini(message)
-        else:
+        # Force OpenRouter if configured
+        if self.provider == "openrouter":
             return await self._chat_openrouter(message)
+        return await self._chat_gemini(message)
 
     async def _chat_gemini(self, message):
         max_retries = 3
