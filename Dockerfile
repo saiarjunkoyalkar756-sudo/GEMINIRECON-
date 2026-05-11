@@ -21,6 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt honcho
 
 # Create a Procfile for honcho to manage both processes
 RUN echo "web: uvicorn api.main:app --host 0.0.0.0 --port \$PORT" > Procfile && \
-    echo "worker: celery -A workers.tasks.celery_app worker --loglevel=info" >> Procfile
+    echo "worker: celery -A workers.tasks.celery_app worker --loglevel=info --concurrency=1 --max-tasks-per-child=1" >> Procfile
 
 CMD ["honcho", "start"]
