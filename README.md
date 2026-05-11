@@ -1,44 +1,28 @@
-# GEMINIRECON 2.0 - Enterprise AI Recon & CVE Intelligence
+# GEMINIRECON v2.0
 
-GEMINIRECON is a production-grade attack surface management platform that combines high-performance reconnaissance tools with AI-driven intelligence and CVE correlation.
+GEMINIRECON is a production-grade, AI-native reconnaissance and cybersecurity intelligence platform. It orchestrates advanced security tools, correlates technology stacks with vulnerability databases, and provides professional, evidence-based security assessments.
 
-## 🌟 Enterprise Capabilities
+## 🌟 Professional Features
 
-- **Advanced Web Intelligence:** Async crawling, header analysis, and cookie auditing.
-- **Technology Fingerprinting:** Deep detection of CMS, frameworks, and servers using WhatWeb and custom signatures.
-- **CVE Correlation Engine:** Automatically matches detected technologies and versions with the NVD database.
-- **JS Analysis Engine:** Scans JavaScript files for exposed API keys, secrets, and internal endpoints.
-- **AI Analysis Engine:** Professionally summarizes REAL scan data into executive reports without hallucinations using OpenAI or OpenRouter.
-- **Live Monitoring:** Real-time log streaming via WebSockets directly to the dashboard.
-- **Scalable Architecture:** Built on FastAPI (Async) for high-concurrency enterprise environments.
+- **AI-Native Orchestration**: Multi-agent system manages the full Reconnaissance-Analysis-Risk-Report pipeline.
+- **Skill-Based Reconnaissance**: Execute modular, versioned security methodologies such as "Bug Bounty Workflow" or "Advanced Infrastructure Recon".
+- **Real-Time SOC Dashboard**: Monitor reconnaissance missions in real-time with live log streaming and vulnerability heatmaps.
+- **Persistent Intelligence**: Leverages vector-based memory to store and recall historical findings across missions.
+- **Automated Evidence-Based Reporting**: Generates professional, multi-page security reports (PDF) derived exclusively from validated tool data.
+- **Cloud-Native Architecture**: Built for scale on a serverless-friendly stack (FastAPI, Redis, Supabase, Vercel).
 
-## 🚀 Commands
+## 🚀 Getting Started
 
-Perform various levels of assessment via the CLI:
+1. **Deploy Frontend**: Accessible at [https://geminirecon-frontend.vercel.app](https://geminirecon-frontend.vercel.app).
+2. **Backend**: Hosted on Render, utilizing a unified API and Worker process for efficient resource management.
+3. **Scan**: Initiate a mission by selecting a Recon Skill and providing a target domain.
 
-```bash
-# Full comprehensive reconnaissance
-python main.py --target https://example.com --full-recon
+## 🛠️ Infrastructure Overview
 
-# Specific assessments
-python main.py --target https://example.com --web-fetch
-python main.py --target https://example.com --tech-detect
-python main.py --target https://example.com --cve-scan
-python main.py --target https://example.com --js-analysis
-```
-
-## 🛠️ Architecture
-
-- **Backend:** FastAPI (Async), SQLite/PostgreSQL, BackgroundTasks.
-- **Modules:** `WebFetchEngine`, `TechDetector`, `CVEEngine`, `JSAnalyzer`.
-- **Scanners:** Subfinder, Nmap, Nuclei, WhatWeb.
-- **Frontend:** React 18, TailwindCSS, Recharts, Lucide.
-
-## 📦 Deployment
-
-1. **Setup:** `./setup.sh`
-2. **Configure:** Update `.env` with `OPENAI_API_KEY`.
-3. **Run:** `docker-compose up -d`
+- **Orchestration**: AI Agents using Gemini 2.0 / OpenRouter.
+- **Database/Storage**: Supabase (PostgreSQL + pgvector).
+- **Task Queue**: Upstash Redis.
+- **Compute**: Render (Python/Docker) & Vercel (React).
 
 ---
-*Built for Security Engineers, Bug Hunters, and SOC Teams.*
+*Autonomous Cybersecurity Intelligence Engine v2.0*
