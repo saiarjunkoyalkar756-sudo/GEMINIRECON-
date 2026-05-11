@@ -2,6 +2,8 @@
 
 GEMINIRECON is a production-grade, AI-native reconnaissance and cybersecurity intelligence platform. It orchestrates advanced security tools, correlates technology stacks with vulnerability databases, and provides professional, evidence-based security assessments.
 
+![GEMINIRECON Dashboard](assets/file_00000000658471fa9082b4148341f654.png)
+
 ## 🌟 Professional Features
 
 - **AI-Native Orchestration**: Multi-agent system manages the full Reconnaissance-Analysis-Risk-Report pipeline.
