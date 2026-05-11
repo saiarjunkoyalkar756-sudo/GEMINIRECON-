@@ -61,3 +61,5 @@ node_modules/
 # Local sync artifacts
 *.local.md
 *.synced
+.vercel
+.env*.local

@@ -37,6 +37,10 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "recon-artifacts")
 
+# Upstash Vector Configuration
+UPSTASH_VECTOR_REST_URL = os.getenv("UPSTASH_VECTOR_REST_URL")
+UPSTASH_VECTOR_REST_TOKEN = os.getenv("UPSTASH_VECTOR_REST_TOKEN")
+
 # Scanning Constants
 MAX_PARALLEL_SCANS = 5
 SCAN_TIMEOUT = 3600 # 1 hour
