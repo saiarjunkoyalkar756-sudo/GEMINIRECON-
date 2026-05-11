@@ -23,6 +23,7 @@ asyncpg
 upstash-vector
 supabase
 google-api-core
+passlib[bcrypt]
 pytest
 pytest-asyncio
 httpx
