@@ -17,6 +17,7 @@ fpdf2
 python-multipart
 python-jose
 websockets
+honcho
 celery
 redis
 asyncpg
