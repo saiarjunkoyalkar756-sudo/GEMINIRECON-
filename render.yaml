@@ -14,7 +14,7 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
-        value: https://frontend-seven-sandy-55.vercel.app
+        value: https://geminirecon-frontend.vercel.app,https://frontend-seven-sandy-55.vercel.app
 
   - type: worker
     name: geminirecon-worker
