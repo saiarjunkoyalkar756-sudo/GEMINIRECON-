@@ -1,0 +1,20 @@
+name: "infrastructure_recon"
+category: "recon"
+objective: "Identify open services, version numbers, and correlate them with known CVEs."
+methodology:
+  - "Run a comprehensive nmap scan on the target to identify open ports and services."
+  - "Extract service versions and software information from nmap output."
+  - "Run targeted Nuclei templates based on the detected software versions."
+  - "Correlate identified software with public CVE databases."
+prompt_template: |
+  Perform a deep infrastructure reconnaissance for the target: {target}.
+  Follow this methodology:
+  {methodology}
+  Use nmap to identify services and nuclei to scan for vulnerabilities.
+expected_outputs:
+  - "Open ports and service versions"
+  - "List of identified vulnerabilities"
+  - "CVE references for detected software"
+tools_required:
+  - "nmap"
+  - "nuclei"
