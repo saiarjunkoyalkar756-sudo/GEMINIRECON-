@@ -20,6 +20,8 @@ websockets
 celery
 redis
 asyncpg
+upstash-vector
+supabase
 pytest
 pytest-asyncio
 httpx
