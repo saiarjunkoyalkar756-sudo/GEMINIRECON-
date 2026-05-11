@@ -23,9 +23,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week
 # AI Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = GOOGLE_API_KEY # Alias for convenience
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-AI_MODEL = os.getenv("AI_MODEL", "google/gemini-2.0-flash-001") # Default high-performance model
+
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini") # "gemini" or "openrouter"
+
+AI_MODEL = os.getenv("AI_MODEL", OPENROUTER_MODEL if LLM_PROVIDER == "openrouter" else GEMINI_MODEL)
+
+# Supabase Configuration
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "recon-artifacts")
 
 # Scanning Constants
 MAX_PARALLEL_SCANS = 5

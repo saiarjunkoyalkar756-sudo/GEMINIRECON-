@@ -1,0 +1,18 @@
+name: "subdomain_enumeration"
+category: "recon"
+objective: "Discover all subdomains associated with a target domain to map the attack surface."
+methodology:
+  - "Identify the primary domain."
+  - "Use passive discovery tools like subfinder."
+  - "Verify live subdomains using httpx or similar (if available)."
+  - "Correlate results into a unique list of assets."
+prompt_template: |
+  Perform subdomain enumeration for the target: {target}.
+  Follow this methodology:
+  {methodology}
+  Use the available tools to find as many subdomains as possible.
+expected_outputs:
+  - "List of discovered subdomains"
+  - "Live status of subdomains"
+tools_required:
+  - "subfinder"

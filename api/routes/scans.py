@@ -1,27 +1,22 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.storage.database import get_db, AsyncSessionLocal
-from core.storage.models import ScanJob, Target, JobStatus, ScanLog
-from workers.bounty_tasks import run_bounty_workflow
-from reports.generator import ReportGenerator
+from core.storage.database import get_db
+from core.storage.models import ScanJob, Target, JobStatus
+from workers.tasks import run_scan_task
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from openai import AsyncOpenAI
-from core.config import OPENAI_API_KEY, OPENROUTER_API_KEY, OPENROUTER_BASE_URL, AI_MODEL
-import asyncio
 import json
 
 router = APIRouter()
 
 class ScanCreate(BaseModel):
     target_url: str
-    workflow_type: str = "full_recon"
+    workflow_type: str = "subdomain_enumeration"
     options: dict = {}
 
 @router.post("/")
-async def create_scan(data: ScanCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+async def create_scan(data: ScanCreate, db: AsyncSession = Depends(get_db)):
     url = data.target_url
     if not url.startswith(("http://", "https://")):
         url = f"https://{url}"
@@ -37,14 +32,19 @@ async def create_scan(data: ScanCreate, background_tasks: BackgroundTasks, db: A
         await db.commit()
         await db.refresh(target)
     
-    scan_job = ScanJob(target_id=target.id, status=JobStatus.PENDING, options=data.options)
+    scan_job = ScanJob(
+        target_id=target.id, 
+        status=JobStatus.PENDING, 
+        options={**data.options, "skill": data.workflow_type}
+    )
     db.add(scan_job)
     await db.commit()
     await db.refresh(scan_job)
     
-    background_tasks.add_task(run_bounty_workflow, scan_job.id, url, data.workflow_type)
+    # Trigger Celery task
+    run_scan_task.delay(scan_job.id, url)
     
-    return {"scan_id": scan_job.id, "status": "queued", "workflow": data.workflow_type}
+    return {"scan_id": scan_job.id, "status": "queued", "skill": data.workflow_type}
 
 @router.get("/")
 async def list_scans(db: AsyncSession = Depends(get_db)):
@@ -56,54 +56,27 @@ async def list_scans(db: AsyncSession = Depends(get_db)):
             "target_id": s.target_id,
             "status": s.status.value,
             "start_time": s.start_time.isoformat() if s.start_time else None,
-            "results_summary": s.results_summary
+            "results_summary": s.results_summary,
+            "skill": s.options.get("skill") if s.options else "unknown"
         }
         for s in scans
     ]
 
 @router.get("/{scan_id}/report")
 async def download_report(scan_id: int, db: AsyncSession = Depends(get_db)):
-    query = select(ScanJob).where(ScanJob.id == scan_id).options(
-        selectinload(ScanJob.target),
-        selectinload(ScanJob.vulnerabilities)
-    )
-    result = await db.execute(query)
+    result = await db.execute(select(ScanJob).where(ScanJob.id == scan_id))
     scan_job = result.scalars().first()
     
-    if not scan_job:
-        raise HTTPException(status_code=404, detail="Scan not found")
-        
-    generator = ReportGenerator(scan_job)
-    pdf_path = generator.generate_pdf()
+    if not scan_job or not scan_job.results_summary:
+        raise HTTPException(status_code=404, detail="Report not ready or scan not found")
     
-    return FileResponse(
-        pdf_path, 
-        media_type="application/pdf", 
-        filename=f"GEMINIRECON_Report_{scan_job.target.domain}_{scan_id}.pdf"
-    )
-
-@router.websocket("/ws/logs/{scan_id}")
-async def websocket_logs(websocket: WebSocket, scan_id: int):
-    await websocket.accept()
-    last_log_id = 0
+    # In the new architecture, the report path might be in the summary or we can regenerate it
     try:
-        while True:
-            async with AsyncSessionLocal() as db:
-                query = select(ScanLog).where(ScanLog.scan_job_id == scan_id, ScanLog.id > last_log_id).order_by(ScanLog.id)
-                result = await db.execute(query)
-                logs = result.scalars().all()
-                
-                for log in logs:
-                    await websocket.send_json({
-                        "level": log.level,
-                        "message": log.message,
-                        "timestamp": log.timestamp.isoformat()
-                    })
-                    last_log_id = log.id
-            
-            await asyncio.sleep(1) 
-    except WebSocketDisconnect:
-        print(f"WebSocket disconnected for scan {scan_id}")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-        await websocket.close()
+        summary = json.loads(scan_job.results_summary)
+        pdf_path = summary.get("pdf_path")
+        if pdf_path and os.path.exists(pdf_path):
+            return FileResponse(pdf_path, media_type="application/pdf")
+    except:
+        pass
+    
+    raise HTTPException(status_code=404, detail="PDF report not found on disk")

@@ -2,29 +2,59 @@ import os
 import asyncio
 import time
 import json
+import logging
 from google import genai
 from google.genai import types
 from google.api_core import exceptions
 from openai import OpenAI
 from core.config import GEMINI_API_KEY, GEMINI_MODEL, OPENROUTER_API_KEY, OPENROUTER_MODEL, LLM_PROVIDER
-from core.utils.autotune import AutoTune
-from core.utils.research.classify import Classifier
+from tools.registry import registry
+from execution.engine import execution_engine
+
+logger = logging.getLogger(__name__)
 
 class BaseAgent:
     def __init__(self, model_id=None, system_instruction=None, tools=None):
         self.provider = LLM_PROVIDER
         self.system_instruction = system_instruction
-        self.tools = tools or []
+        # tools can be a list of tool names or ToolDefinition objects
+        self.tool_names = tools or [] 
         self.history = []
         
+        # Resolve tool definitions from registry if names are provided
+        self.resolved_tools = []
+        for t in self.tool_names:
+            if isinstance(t, str):
+                tool_def = registry.get_tool(t)
+                if tool_def:
+                    self.resolved_tools.append(tool_def)
+            else:
+                self.resolved_tools.append(t)
+
         if self.provider == "gemini":
             self.client = genai.Client(api_key=GEMINI_API_KEY)
             self.model_id = model_id or GEMINI_MODEL
+            
+            # Gemini tool definitions
+            gemini_tools = []
+            if self.resolved_tools:
+                # In the new SDK, we might need to convert our schema to what Gemini expects
+                # or use function declarations.
+                # For now, we'll use the OpenAI-style schemas which many providers understand
+                # or adapt them as needed.
+                gemini_tools = [types.Tool(function_declarations=[
+                    types.FunctionDeclaration(
+                        name=t.name,
+                        description=t.description,
+                        parameters=t.get_openai_schema()["function"]["parameters"]
+                    ) for t in self.resolved_tools
+                ])]
+
             self.chat = self.client.chats.create(
                 model=self.model_id,
                 config=types.GenerateContentConfig(
                     system_instruction=self.system_instruction,
-                    tools=self.tools
+                    tools=gemini_tools
                 )
             )
         else: # OpenRouter
@@ -37,7 +67,6 @@ class BaseAgent:
                 self.history.append({"role": "system", "content": self.system_instruction})
 
     async def chat_async(self, message):
-        # Force OpenRouter if configured
         if self.provider == "openrouter":
             return await self._chat_openrouter(message)
         return await self._chat_gemini(message)
@@ -46,41 +75,44 @@ class BaseAgent:
         max_retries = 3
         base_delay = 5
         
-        # 1. Classify prompt for safety/context
-        classification = Classifier.classify(message)
-        
-        # 2. History retrieval
-        try:
-            raw_history = self.chat.get_history()
-            history = [{'role': p.role, 'content': p.parts[0].text} for p in raw_history if p.parts and p.parts[0].text]
-        except Exception:
-            history = []
-            
-        strategy = 'adaptive'
-        if classification['domain'] in ['cyber', 'meta']:
-            strategy = 'precise'
-            
-        tuned_params = AutoTune.get_params(message, history, strategy=strategy)
-        
-        # Note: google-genai SDK handles tool calls automatically if they are in the config
-        # during a chat session.
-        config_params = {
-            'system_instruction': self.system_instruction,
-            'tools': self.tools,
-            'temperature': tuned_params.get('temperature'),
-            'top_p': tuned_params.get('top_p'),
-            'top_k': tuned_params.get('top_k'),
-        }
-
-        config = types.GenerateContentConfig(**config_params)
-
         for attempt in range(max_retries):
             try:
                 loop = asyncio.get_event_loop()
+                # Gemini SDK handles tool calling loops internally if configured, 
+                # but we want more control or at least to see what's happening.
                 response = await loop.run_in_executor(
                     None, 
-                    lambda: self.chat.send_message(message, config=config)
+                    lambda: self.chat.send_message(message)
                 )
+                
+                # Check for tool calls in response
+                # Note: The SDK might handle execution if automatic tool calling is enabled.
+                # If not, we handle it manually:
+                while response.candidates[0].content.parts and any(p.function_call for p in response.candidates[0].content.parts):
+                    tool_parts = [p.function_call for p in response.candidates[0].content.parts if p.function_call]
+                    tool_responses = []
+                    
+                    for fc in tool_parts:
+                        tool_name = fc.name
+                        args = fc.args
+                        logger.info(f"[Gemini] Tool Call: {tool_name} with args {args}")
+                        
+                        # Execute tool
+                        result = await execution_engine.execute_tool(tool_name, args)
+                        
+                        tool_responses.append(types.Part(
+                            function_response=types.FunctionResponse(
+                                name=tool_name,
+                                response={"result": str(result)}
+                            )
+                        ))
+                    
+                    # Send tool responses back to model
+                    response = await loop.run_in_executor(
+                        None,
+                        lambda: self.chat.send_message(tool_responses)
+                    )
+                
                 return response
             except Exception as e:
                 error_str = str(e).lower()
@@ -95,30 +127,15 @@ class BaseAgent:
     async def _chat_openrouter(self, message):
         self.history.append({"role": "user", "content": message})
         
-        # Define tools for OpenAI format
-        openai_tools = []
-        for tool in self.tools:
-            # We assume tools are passed as the actual function objects
-            # and we need to provide their JSON schema.
-            # For simplicity, we'll hardcode the schema for run_osint_tool
-            if tool.__name__ == 'run_osint_tool':
-                openai_tools.append({
-                    "type": "function",
-                    "function": {
-                        "name": "run_osint_tool",
-                        "description": "Execute an OSINT tool command on the system.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "command": {
-                                    "type": "string",
-                                    "description": "The full command string to execute (e.g., 'subfinder -d example.com')"
-                                }
-                            },
-                            "required": ["command"]
-                        }
-                    }
-                })
+        # Limit history to last 10 turns to save tokens
+        if len(self.history) > 10:
+            # Keep system instruction if it exists
+            if self.history[0]["role"] == "system":
+                self.history = [self.history[0]] + self.history[-9:]
+            else:
+                self.history = self.history[-10:]
+
+        openai_tools = [t.get_openai_schema() for t in self.resolved_tools]
 
         max_turns = 10
         for _ in range(max_turns):
@@ -140,7 +157,7 @@ class BaseAgent:
                 response_message = completion.choices[0].message
                 self.history.append(response_message)
                 
-                if not response_message.tool_calls:
+                if not hasattr(response_message, 'tool_calls') or not response_message.tool_calls:
                     # Final text response
                     class MockResponse:
                         def __init__(self, text):
@@ -152,31 +169,19 @@ class BaseAgent:
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
                     
-                    # Find the tool in our self.tools
-                    tool_func = None
-                    for t in self.tools:
-                        if t.__name__ == function_name:
-                            tool_func = t
-                            break
+                    logger.info(f"[OpenRouter] Tool Call: {function_name} with args {function_args}")
                     
-                    if tool_func:
-                        # Execute the tool
-                        result = tool_func(**function_args)
-                        self.history.append({
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": function_name,
-                            "content": str(result),
-                        })
-                    else:
-                        self.history.append({
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": function_name,
-                            "content": f"Error: Tool {function_name} not found",
-                        })
+                    # Execute tool
+                    result = await execution_engine.execute_tool(function_name, function_args)
+                    
+                    self.history.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(result),
+                    })
             except Exception as e:
-                print(f"OpenRouter Error: {e}")
+                logger.error(f"OpenRouter Error: {e}")
                 raise e
         
         raise Exception("Max tool execution turns exceeded for OpenRouter.")

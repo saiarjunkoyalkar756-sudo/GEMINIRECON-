@@ -81,6 +81,12 @@ class Normalizer:
             result = re.sub(old, new, result)
         return result
 
+    @staticmethod
+    def truncate(text: str, max_chars: int = 10000) -> str:
+        if len(text) <= max_chars:
+            return text
+        return text[:max_chars] + f"\n... [TRUNCATED - {len(text) - max_chars} characters omitted] ..."
+
     @classmethod
     def normalize(cls, text: str, hedges: bool = True, preambles: bool = True, casual: bool = False) -> str:
         result = text

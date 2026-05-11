@@ -9,11 +9,23 @@ const LogStream = ({ scanId }) => {
   useEffect(() => {
     if (!scanId) return;
 
-    ws.current = new WebSocket(`ws://localhost:8000/scans/ws/logs/${scanId}`);
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+    const WS_BASE = API_BASE.replace(/^http/, "ws");
+    ws.current = new WebSocket(`${WS_BASE}/ws/scans/${scanId}`);
 
     ws.current.onmessage = (event) => {
-      const log = JSON.parse(event.data);
-      setLogs((prev) => [...prev, log]);
+      try {
+        const log = JSON.parse(event.data);
+        if (log.type === "log") {
+          setLogs((prev) => [...prev, {
+            timestamp: new Date().toISOString(),
+            level: log.level,
+            message: log.message
+          }]);
+        }
+      } catch (e) {
+        console.error("Failed to parse log", e);
+      }
     };
 
     return () => {

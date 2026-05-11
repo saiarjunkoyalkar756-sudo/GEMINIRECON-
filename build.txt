@@ -1,0 +1,501 @@
+Upgrade the current AIReconFusion / GEMINIRECON codebase into a production-grade AI-native reconnaissance and cybersecurity intelligence platform.
+
+IMPORTANT:
+Do NOT rewrite the project from scratch.
+Analyze the existing architecture first.
+Preserve reusable components.
+Refactor weak areas incrementally.
+Improve maintainability, scalability, modularity, and conceptual clarity.
+
+==================================================
+PRIMARY UPGRADE GOALS
+==================================================
+
+Transform the current project into:
+
+- enterprise-grade architecture
+- modular AI orchestration platform
+- scalable reconnaissance framework
+- research-quality cybersecurity product
+- AI-driven workflow engine
+- maintainable full-stack system
+
+The upgraded platform should feel:
+- professional
+- production-ready
+- scalable
+- modular
+- research-oriented
+- AI-native
+- cybersecurity-focused
+
+==================================================
+FIRST TASK: FULL CODEBASE ANALYSIS
+==================================================
+
+Before modifying anything:
+
+1. Analyze the complete repository structure
+2. Identify:
+   - duplicated logic
+   - architectural inconsistencies
+   - dead code
+   - tightly coupled components
+   - mixed concerns
+   - insecure execution flows
+   - poor modularity
+   - hardcoded workflows
+   - fake/static outputs
+   - unmaintainable files
+
+3. Generate:
+   - architecture audit
+   - dependency map
+   - module relationship graph
+   - technical debt report
+   - refactor recommendations
+
+DO NOT immediately start coding.
+
+==================================================
+CORE UPGRADE DIRECTION
+==================================================
+
+Refactor the platform into clear layers:
+
+frontend/
+backend/
+agents/
+execution/
+workflows/
+skills/
+storage/
+reports/
+memory/
+orchestration/
+validation/
+tools/
+websocket/
+workers/
+
+Every layer must have:
+- single responsibility
+- clean interfaces
+- modular boundaries
+- reusable architecture
+
+==================================================
+UPGRADE THE AI SYSTEM
+==================================================
+
+Implement a true AI orchestration layer.
+
+CURRENT PROBLEM:
+The AI appears partially mixed with execution logic and dashboard workflows.
+
+TARGET ARCHITECTURE:
+
+Prompt
+   ↓
+Intent Analysis
+   ↓
+AI Planner
+   ↓
+Decision Engine
+   ↓
+Workflow Generator
+   ↓
+Orchestrator
+   ↓
+Execution Engine
+   ↓
+Correlation Layer
+   ↓
+Threat Intelligence Layer
+   ↓
+Validation Layer
+   ↓
+Report Generator
+   ↓
+Dashboard Visualization
+   ↓
+Persistent Memory
+
+==================================================
+IMPLEMENT MULTI-AGENT SYSTEM
+==================================================
+
+Create dedicated AI agents.
+
+--------------------------------------------------
+1. Intent Agent
+--------------------------------------------------
+Responsibilities:
+- classify prompts
+- determine recon type
+- infer target scope
+- select workflow category
+
+--------------------------------------------------
+2. Planner Agent
+--------------------------------------------------
+Responsibilities:
+- create recon strategies
+- build task graphs
+- generate execution plans
+- prioritize tasks
+
+--------------------------------------------------
+3. Decision Agent
+--------------------------------------------------
+Responsibilities:
+- select tools
+- determine scan depth
+- decide pipeline execution
+- decide intelligence retrieval
+
+--------------------------------------------------
+4. Recon Agent
+--------------------------------------------------
+Responsibilities:
+- manage scanning
+- execute pipelines
+- monitor tasks
+- coordinate execution workers
+
+--------------------------------------------------
+5. Correlation Agent
+--------------------------------------------------
+Responsibilities:
+- correlate technologies
+- identify attack paths
+- map relationships
+- reduce false positives
+
+--------------------------------------------------
+6. Threat Intelligence Agent
+--------------------------------------------------
+Responsibilities:
+- enrich findings with CVEs
+- map MITRE ATT&CK
+- retrieve public intelligence
+- correlate vulnerabilities
+
+--------------------------------------------------
+7. Validation Agent
+--------------------------------------------------
+Responsibilities:
+- perform safe validation
+- fingerprint analysis
+- response validation
+- misconfiguration detection
+
+IMPORTANT:
+No destructive exploitation.
+No weaponized payload generation.
+
+==================================================
+ADD WEB SEARCH INTELLIGENCE SYSTEM
+==================================================
+
+If local recon results are incomplete:
+
+Automatically trigger:
+- external intelligence retrieval
+- CVE enrichment
+- technology fingerprint lookup
+- exposure pattern research
+- public threat intelligence correlation
+
+The AI must:
+- detect missing information
+- search external intelligence
+- enrich findings
+- improve confidence scoring
+
+==================================================
+ADD SKILL SYSTEM
+==================================================
+
+Refactor AI prompts into modular skills.
+
+Structure:
+
+skills/
+├── recon/
+├── osint/
+├── web/
+├── dns/
+├── cloud/
+├── intel/
+├── vuln/
+└── validation/
+
+Each skill should contain:
+- objective
+- methodology
+- prompts
+- validation logic
+- workflow mappings
+- expected outputs
+
+The skill system must:
+- be reusable
+- support versioning
+- support orchestration
+- support dynamic loading
+
+==================================================
+UPGRADE EXECUTION ENGINE
+==================================================
+
+Current execution logic likely has:
+- direct subprocess calls
+- tightly coupled pipelines
+- poor isolation
+
+Upgrade to:
+- Celery workers
+- Redis queues
+- async orchestration
+- isolated subprocess execution
+- timeout enforcement
+- websocket log streaming
+- retry logic
+- execution monitoring
+
+==================================================
+UPGRADE TOOL MANAGEMENT
+==================================================
+
+Implement centralized tool registry.
+
+Features:
+- tool metadata
+- capability definitions
+- validation rules
+- dependency checks
+- execution wrappers
+- version management
+
+Supported tools:
+- subfinder
+- amass
+- httpx
+- nuclei
+- naabu
+- katana
+- dnsx
+- assetfinder
+- theHarvester
+
+==================================================
+ADD SAFE VALIDATION ENGINE
+==================================================
+
+Implement OWN validation logic for:
+- version fingerprint checks
+- exposed endpoint detection
+- header analysis
+- technology validation
+- passive exposure analysis
+- weak configuration detection
+
+Examples:
+- exposed .git
+- admin panels
+- dangerous headers
+- exposed dashboards
+- weak TLS configs
+
+IMPORTANT:
+Safe verification only.
+No destructive exploitation.
+
+==================================================
+UPGRADE DASHBOARD
+==================================================
+
+Refactor the frontend into a modern SOC-style dashboard.
+
+Features:
+- live scan logs
+- AI insights
+- attack surface visualization
+- vulnerability heatmaps
+- workflow graphs
+- asset inventory
+- timeline analytics
+- execution monitoring
+
+Use:
+- React
+- TypeScript
+- TailwindCSS
+- Socket.IO
+- Recharts
+- Framer Motion
+
+==================================================
+ADD VISUALIZATION ENGINE
+==================================================
+
+Implement:
+- graph relationships
+- service dependency maps
+- attack surface diagrams
+- timeline views
+- technology trees
+- workflow execution graphs
+
+==================================================
+UPGRADE STORAGE LAYER
+==================================================
+
+Implement:
+- PostgreSQL
+- Redis
+- vector database
+- persistent memory
+- historical correlations
+
+Store:
+- targets
+- assets
+- findings
+- reports
+- AI observations
+- workflows
+- execution history
+
+==================================================
+ADD RAG + MEMORY SYSTEM
+==================================================
+
+Implement:
+- embeddings
+- vector retrieval
+- contextual memory
+- scan history retrieval
+- workflow recall
+
+Use:
+- pgvector or ChromaDB
+
+==================================================
+UPGRADE API ARCHITECTURE
+==================================================
+
+Refactor into modular FastAPI services.
+
+Endpoints:
+- /scan/start
+- /scan/status
+- /workflow/run
+- /agents
+- /skills
+- /targets
+- /findings
+- /reports
+- /intel/search
+- /memory
+
+==================================================
+SECURITY HARDENING
+==================================================
+
+Implement:
+- JWT authentication
+- RBAC
+- audit logs
+- secure subprocess isolation
+- environment secret management
+- rate limiting
+- prompt injection protection
+- validation layers
+- workflow restrictions
+
+==================================================
+IMPROVE MAINTAINABILITY
+==================================================
+
+Prioritize:
+- clean architecture
+- dependency injection
+- service separation
+- modular components
+- reusable interfaces
+- typed schemas
+- scalable patterns
+
+==================================================
+IMPROVE CONCEPTUAL CLARITY
+==================================================
+
+Strictly separate:
+- AI reasoning
+- orchestration
+- execution
+- validation
+- visualization
+- storage
+- workflows
+- skills
+
+==================================================
+RESEARCH QUALITY IMPROVEMENTS
+==================================================
+
+The platform must resemble:
+- advanced cybersecurity research tooling
+- AI-assisted reconnaissance systems
+- enterprise attack surface management
+- autonomous security intelligence platforms
+
+Focus on:
+- explainable reasoning
+- reproducible workflows
+- evidence-based findings
+- structured intelligence
+
+==================================================
+DEVOPS + DEPLOYMENT
+==================================================
+
+Add:
+- Docker Compose
+- scalable workers
+- Redis services
+- PostgreSQL services
+- production env configs
+- Kubernetes-ready structure
+
+==================================================
+FINAL EXPECTED OUTPUT
+==================================================
+
+Generate:
+1. architecture audit
+2. technical debt report
+3. upgrade roadmap
+4. refactored folder structure
+5. modular backend
+6. modular frontend
+7. agent framework
+8. orchestration engine
+9. execution framework
+10. websocket architecture
+11. dashboard upgrades
+12. storage improvements
+13. memory system
+14. skill framework
+15. validation engine
+16. Docker setup
+17. setup scripts
+18. production-grade documentation
+
+The upgraded platform should feel like:
+- an AI-powered reconnaissance operating system
+- an autonomous cybersecurity intelligence platform
+- a research-grade security workflow engine
+- an enterprise-grade AI security product

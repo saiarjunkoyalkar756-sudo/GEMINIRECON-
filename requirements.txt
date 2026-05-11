@@ -17,6 +17,9 @@ fpdf2
 python-multipart
 python-jose
 websockets
+celery
+redis
+asyncpg
 pytest
 pytest-asyncio
 httpx

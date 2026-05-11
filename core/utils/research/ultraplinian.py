@@ -108,15 +108,36 @@ RESPONSE REQUIREMENTS:
         except Exception as e:
             return {"model": model, "success": False, "error": str(e)}
 
-    async def race(self, query: str, api_key: str, tier: str = 'fast') -> List[Dict]:
-        models = self.MODELS.get(tier, self.MODELS['fast'])
+    @staticmethod
+    async def race(query: str, tier: str = 'fast') -> Any:
+        from core.config import OPENROUTER_API_KEY
+        if not OPENROUTER_API_KEY:
+            raise Exception("OPENROUTER_API_KEY not set for Ultraplinian racing.")
+
+        models = Ultraplinian.MODELS.get(tier, Ultraplinian.MODELS['fast'])
         messages = [
-            {"role": "system", "content": "You are a specialized security analyst. " + self.DEPTH_DIRECTIVE},
+            {"role": "system", "content": "You are a specialized security analyst. " + Ultraplinian.DEPTH_DIRECTIVE},
             {"role": "user", "content": query}
         ]
         
         async with aiohttp.ClientSession() as session:
-            tasks = [self.query_openrouter(session, m, messages, api_key) for m in models]
+            # Note: We need to instantiate Ultraplinian to call query_openrouter if it's not static,
+            # or make query_openrouter static too.
+            engine = Ultraplinian()
+            tasks = [engine.query_openrouter(session, m, messages, OPENROUTER_API_KEY) for m in models]
             results = await asyncio.gather(*tasks)
             
-        return sorted([r for r in results if r['success']], key=lambda x: x['score'], reverse=True)
+        valid_results = sorted([r for r in results if r['success']], key=lambda x: x['score'], reverse=True)
+        
+        if not valid_results:
+            raise Exception("All models failed to respond in Ultraplinian race.")
+            
+        best = valid_results[0]
+        
+        # Return a mock response object that agents expect
+        class UltraResponse:
+            def __init__(self, text, model):
+                self.text = text
+                self.model = model
+        
+        return UltraResponse(best['content'], best['model'])

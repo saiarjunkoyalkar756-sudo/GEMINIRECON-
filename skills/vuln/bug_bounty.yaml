@@ -1,0 +1,22 @@
+name: "bug_bounty_workflow"
+category: "vuln"
+objective: "Identify common bug bounty vulnerabilities like SQLi, XSS, and misconfigurations."
+methodology:
+  - "Perform comprehensive reconnaissance (subdomains, ports)."
+  - "Discover hidden directories and files (fuzzing)."
+  - "Run vulnerability templates (Nuclei)."
+  - "Perform specialized probes for XSS and SQLi on discovered parameters."
+  - "Correlate all findings and assess impact."
+prompt_template: |
+  Execute the Bug Bounty Workflow for {target}.
+  Follow this methodology:
+  {methodology}
+  Use available tools (subfinder, nuclei, nmap, etc.) to identify high-impact vulnerabilities.
+expected_outputs:
+  - "List of vulnerabilities with severity"
+  - "Evidence for each finding"
+  - "Remediation steps"
+tools_required:
+  - "subfinder"
+  - "nuclei"
+  - "nmap"
