@@ -13,12 +13,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import ssl
+
 celery_app = Celery(
     "tasks", 
     broker=CELERY_BROKER_URL, 
     backend=CELERY_RESULT_BACKEND,
-    broker_use_ssl={'ssl_cert_reqs': 'CERT_NONE'},
-    redis_backend_use_ssl={'ssl_cert_reqs': 'CERT_NONE'}
+    broker_use_ssl={'ssl_cert_reqs': ssl.CERT_NONE},
+    redis_backend_use_ssl={'ssl_cert_reqs': ssl.CERT_NONE}
 )
 
 from core.events import event_bus
