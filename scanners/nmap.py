@@ -5,8 +5,8 @@ import xml.etree.ElementTree as ET
 class NmapScanner(BaseScanner):
     async def run(self):
         output_file = os.path.join(self.output_dir, "nmap.xml")
-        # -sV: service version detection, -T4: aggressive timing
-        command = f"nmap -sV -T4 -oX {output_file} {self.target}"
+        # -sV: service version detection, -T2: more conservative/memory-stable
+        command = f"nmap -sV -T2 -oX {output_file} {self.target}"
         stdout, stderr, code = await self.execute_command(command)
         
         results = []

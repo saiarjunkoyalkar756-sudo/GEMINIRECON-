@@ -5,8 +5,8 @@ import json
 class NucleiScanner(BaseScanner):
     async def run(self):
         output_file = os.path.join(self.output_dir, "nuclei.json")
-        # Run nuclei with JSON output
-        command = f"nuclei -u {self.target} -json -o {output_file}"
+        # Run nuclei with JSON output, optimized for lower memory (-bulk-size 5)
+        command = f"nuclei -u {self.target} -json -no-update -bulk-size 5 -o {output_file}"
         stdout, stderr, code = await self.execute_command(command)
         
         results = []
