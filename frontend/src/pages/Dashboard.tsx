@@ -111,7 +111,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-8 bg-[#131316] p-4 rounded-xl border border-slate-800/50">
         <div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent flex items-center gap-3">
-            <Shield className="text-blue-500" /> AI-RECON FUSION
+            <Shield className="text-blue-500" /> GEMINI-RECON
           </h1>
           <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold mt-1">Autonomous Reconnaissance Platform v2.0</p>
         </div>
